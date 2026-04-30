@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Car Running Cost Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0d0f14;
+    --surface: #13161e;
+    --card: #1a1e28;
+    --border: #2a2f3f;
+    --amber: #f5a623;
+    --amber-dim: #b87b1a;
+    --red: #e8455a;
+    --green: #2ecc71;
+    --text: #e8ecf4;
+    --muted: #6b7490;
+    --accent: #3d8ef5;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Outfit', sans-serif;
+    min-height: 100vh;
+    padding: 0;
+    overflow-x: hidden;
+  }
+
+  /* Noise texture overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.5;
+  }
+
+  .wrapper {
+    position: relative;
+    z-index: 1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 4rem;
+  }
+
+  /* HEADER */
+  header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+    animation: fadeDown 0.6s ease both;
+  }
+
+  header .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: rgba(245,166,35,0.12);
+    border: 1px solid rgba(245,166,35,0.3);
+    color: var(--amber);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 0.3rem 0.9rem;
+    border-radius: 99px;
+    margin-bottom: 1rem;
+  }
+
+  header h1 {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    line-height: 1.1;
+    background: linear-gradient(135deg, #f5a623, #fff 60%, #6b7490);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  header p {
+    color: var(--muted);
+    font-size: 0.95rem;
+    margin-top: 0.5rem;
+  }
+
+  /* GRID LAYOUT */
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+  }
+
+  @media (max-width: 640px) {
+    .grid { grid-template-columns: 1fr; }
+  }
+
+  /* SECTION CARDS */
+  .section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    animation: fadeUp 0.5s ease both;
+  }
+
+  .section:nth-child(1) { animation-delay: 0.05s; }
+  .section:nth-child(2) { animation-delay: 0.1s; }
+  .section:nth-child(3) { animation-delay: 0.15s; }
+  .section:nth-child(4) { animation-delay: 0.2s; }
+
+  .section-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, var(--amber-dim), transparent);
+    opacity: 0.4;
+  }
+
+  /* FORM FIELDS */
+  .field {
+    margin-bottom: 1.1rem;
+  }
+
+  .field:last-child { margin-bottom: 0; }
+
+  label {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-bottom: 0.35rem;
+    font-weight: 500;
+  }
+
+  .input-wrap {
+    display: flex;
+    align-items: center;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .input-wrap:focus-within {
+    border-color: var(--amber);
+    box-shadow: 0 0 0 3px rgba(245,166,35,0.08);
+  }
+
+  .input-wrap input, .input-wrap select {
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 500;
+    padding: 0.6rem 0.9rem;
+    width: 100%;
+    -webkit-appearance: none;
+  }
+
+  .input-wrap select option {
+    background: var(--card);
+    color: var(--text);
+  }
+
+  .unit {
+    padding: 0 0.75rem;
+    color: var(--amber);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 600;
+    white-space: nowrap;
+    letter-spacing: 0.05em;
+    border-left: 1px solid var(--border);
+  }
+
+  /* SLIDER */
+  .slider-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--border);
+    outline: none;
+    cursor: pointer;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--amber);
+    box-shadow: 0 0 8px rgba(245,166,35,0.5);
+    cursor: pointer;
+    transition: transform 0.15s;
+  }
+
+  input[type="range"]::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+  }
+
+  .slider-val {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--amber);
+    min-width: 3.5rem;
+    text-align: right;
+  }
+
+  /* RESULTS PANEL */
+  .results {
+    grid-column: 1 / -1;
+    background: linear-gradient(135deg, #1a1e28, #13161e);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.75rem;
+    animation: fadeUp 0.5s 0.25s ease both;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .results::before {
+    content: '';
+    position: absolute;
+    top: -80px; right: -80px;
+    width: 220px; height: 220px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(245,166,35,0.08), transparent 70%);
+    pointer-events: none;
+  }
+
+  /* BIG NUMBER */
+  .hero-cost {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1.75rem;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+
+  .hero-cost .label {
+    font-size: 0.78rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 0.4rem;
+  }
+
+  .hero-cost .amount {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: clamp(2.8rem, 8vw, 4.5rem);
+    font-weight: 700;
+    color: var(--amber);
+    line-height: 1;
+    letter-spacing: -0.01em;
+  }
+
+  .hero-cost .sub {
+    color: var(--muted);
+    font-size: 0.82rem;
+    margin-top: 0.4rem;
+  }
+
+  /* STATS ROW */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  @media (max-width: 500px) {
+    .stats-row { grid-template-columns: 1fr 1fr; }
+  }
+
+  .stat-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem;
+    text-align: center;
+  }
+
+  .stat-box .s-label {
+    font-size: 0.72rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.4rem;
+  }
+
+  .stat-box .s-val {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .stat-box .s-val.green { color: var(--green); }
+  .stat-box .s-val.accent { color: var(--accent); }
+  .stat-box .s-val.red { color: var(--red); }
+
+  /* BREAKDOWN TABLE */
+  .breakdown {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .breakdown-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.72rem;
+    color: var(--muted);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 0.6rem;
+  }
+
+  .b-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.55rem 0.75rem;
+    border-radius: 8px;
+    transition: background 0.15s;
+    gap: 0.5rem;
+  }
+
+  .b-row:hover { background: rgba(255,255,255,0.03); }
+
+  .b-row.total {
+    background: rgba(245,166,35,0.08);
+    border: 1px solid rgba(245,166,35,0.2);
+    margin-top: 0.5rem;
+  }
+
+  .b-left {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex: 1;
+  }
+
+  .b-icon { font-size: 1rem; width: 1.4rem; text-align: center; }
+
+  .b-name {
+    font-size: 0.88rem;
+    color: var(--text);
+    opacity: 0.85;
+  }
+
+  .b-row.total .b-name {
+    font-weight: 600;
+    opacity: 1;
+    color: var(--amber);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1rem;
+    letter-spacing: 0.05em;
+  }
+
+  .b-bar-wrap {
+    flex: 1;
+    max-width: 80px;
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  @media (max-width: 480px) { .b-bar-wrap { display: none; } }
+
+  .b-bar {
+    height: 100%;
+    border-radius: 2px;
+    background: var(--amber);
+    transition: width 0.6s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  .b-amount {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text);
+    min-width: 75px;
+    text-align: right;
+  }
+
+  .b-row.total .b-amount {
+    font-size: 1.1rem;
+    color: var(--amber);
+  }
+
+  /* POST EMI NOTE */
+  .emi-note {
+    margin-top: 1.25rem;
+    background: rgba(46,204,113,0.07);
+    border: 1px solid rgba(46,204,113,0.2);
+    border-radius: 10px;
+    padding: 0.85rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .emi-note .icon { font-size: 1.2rem; }
+
+  .emi-note p {
+    font-size: 0.85rem;
+    color: var(--text);
+    opacity: 0.85;
+  }
+
+  .emi-note strong { color: var(--green); }
+
+  /* TIPS */
+  .tips {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    animation: fadeUp 0.5s 0.3s ease both;
+  }
+
+  @media (max-width: 640px) {
+    .tips { grid-template-columns: 1fr; }
+  }
+
+  .tip-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.1rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .tip-card::before {
+    content: attr(data-num);
+    position: absolute;
+    right: -0.5rem; top: -0.5rem;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 5rem;
+    font-weight: 700;
+    color: var(--amber);
+    opacity: 0.04;
+    line-height: 1;
+  }
+
+  .tip-icon { font-size: 1.4rem; margin-bottom: 0.6rem; }
+
+  .tip-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--amber);
+    margin-bottom: 0.35rem;
+    letter-spacing: 0.03em;
+  }
+
+  .tip-text {
+    font-size: 0.8rem;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <header>
+    <div class="badge">🚗 India • ₹ INR</div>
+    <h1>Car Running Cost<br/>Calculator</h1>
+    <p>Apni gaadi ka poora monthly kharcha ek jagah dekho</p>
+  </header>
+
+  <div class="grid">
+
+    <!-- SECTION 1: Basic Info -->
+    <div class="section">
+      <div class="section-title">📌 Basic Info</div>
+
+      <div class="field">
+        <label>Monthly Kilometers</label>
+        <div class="slider-wrap">
+          <input type="range" id="monthlyKm" min="500" max="6000" step="100" value="2750" oninput="syncVal('monthlyKm','kmVal');calc()"/>
+          <span class="slider-val" id="kmVal">2750</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:4px;">
+          <span style="font-size:0.7rem;color:var(--muted)">500 km</span>
+          <span style="font-size:0.7rem;color:var(--muted)">6000 km</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Fuel Type</label>
+        <div class="input-wrap">
+          <select id="fuelType" onchange="calc()">
+            <option value="petrol">Petrol</option>
+            <option value="diesel" selected>Diesel</option>
+            <option value="cng">CNG</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Fuel Price (₹/litre or ₹/kg for CNG)</label>
+        <div class="input-wrap">
+          <input type="number" id="fuelPrice" value="89" min="50" max="150" oninput="calc()"/>
+          <span class="unit">₹/L</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Real-world Mileage</label>
+        <div class="input-wrap">
+          <input type="number" id="mileage" value="19" min="5" max="50" oninput="calc()"/>
+          <span class="unit">KM/L</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 2: Maintenance -->
+    <div class="section">
+      <div class="section-title">🔧 Maintenance & Tyres</div>
+
+      <div class="field">
+        <label>Monthly Maintenance / Service</label>
+        <div class="input-wrap">
+          <span class="unit" style="border-left:none;border-right:1px solid var(--border)">₹</span>
+          <input type="number" id="maintenance" value="2250" min="0" oninput="calc()"/>
+          <span class="unit">/mo</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Cost per Tyre (4 tyres)</label>
+        <div class="input-wrap">
+          <span class="unit" style="border-left:none;border-right:1px solid var(--border)">₹</span>
+          <input type="number" id="tyreCost" value="4750" min="1000" oninput="calc()"/>
+          <span class="unit">/tyre</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Tyre Life (km)</label>
+        <div class="slider-wrap">
+          <input type="range" id="tyreLife" min="10000" max="60000" step="1000" value="35000" oninput="syncVal('tyreLife','tyreLifeVal');calc()"/>
+          <span class="slider-val" id="tyreLifeVal">35000</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Other Consumables (oil, pads, wipers, etc.)</label>
+        <div class="input-wrap">
+          <span class="unit" style="border-left:none;border-right:1px solid var(--border)">₹</span>
+          <input type="number" id="consumables" value="720" min="0" oninput="calc()"/>
+          <span class="unit">/mo</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 3: Insurance & EMI -->
+    <div class="section">
+      <div class="section-title">📋 Insurance & EMI</div>
+
+      <div class="field">
+        <label>Insurance (Yearly)</label>
+        <div class="input-wrap">
+          <span class="unit" style="border-left:none;border-right:1px solid var(--border)">₹</span>
+          <input type="number" id="insurance" value="16000" min="0" oninput="calc()"/>
+          <span class="unit">/yr</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Monthly EMI (0 = fully paid)</label>
+        <div class="input-wrap">
+          <span class="unit" style="border-left:none;border-right:1px solid var(--border)">₹</span>
+          <input type="number" id="emi" value="6500" min="0" oninput="calc()"/>
+          <span class="unit">/mo</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>PUC Certificate (Half-yearly)</label>
+        <div class="input-wrap">
+          <span class="unit" style="border-left:none;border-right:1px solid var(--border)">₹</span>
+          <input type="number" id="puc" value="150" min="0" oninput="calc()"/>
+          <span class="unit">×2/yr</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 4: Other -->
+    <div class="section">
+      <div class="section-title">🔋 Other Costs</div>
+
+      <div class="field">
+        <label>Battery Replacement Cost</label>
+        <div class="input-wrap">
+          <span class="unit" style="border-left:none;border-right:1px solid var(--border)">₹</span>
+          <input type="number" id="battery" value="4500" min="0" oninput="calc()"/>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Battery Life (months)</label>
+        <div class="input-wrap">
+          <input type="number" id="batteryLife" value="36" min="1" oninput="calc()"/>
+          <span class="unit">months</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>AC Gas Refill Cost</label>
+        <div class="input-wrap">
+          <span class="unit" style="border-left:none;border-right:1px solid var(--border)">₹</span>
+          <input type="number" id="acGas" value="1500" min="0" oninput="calc()"/>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>AC Refill Frequency (months)</label>
+        <div class="input-wrap">
+          <input type="number" id="acLife" value="24" min="1" oninput="calc()"/>
+          <span class="unit">months</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESULTS -->
+    <div class="results" id="results">
+      <div class="hero-cost">
+        <div class="label">Total Monthly Running Cost</div>
+        <div class="amount" id="totalMonthly">₹0</div>
+        <div class="sub" id="perKmCost">₹0 per km &nbsp;|&nbsp; ₹0 per year</div>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat-box">
+          <div class="s-label">⛽ Fuel Share</div>
+          <div class="s-val red" id="fuelPct">0%</div>
+        </div>
+        <div class="stat-box">
+          <div class="s-label">🏦 After EMI</div>
+          <div class="s-val green" id="afterEmi">₹0</div>
+        </div>
+        <div class="stat-box">
+          <div class="s-label">📅 Yearly Total</div>
+          <div class="s-val accent" id="yearlyTotal">₹0</div>
+        </div>
+      </div>
+
+      <div class="breakdown-title">Cost Breakdown</div>
+      <div class="breakdown" id="breakdown"></div>
+
+      <div class="emi-note" id="emiNote" style="display:none">
+        <span class="icon">✅</span>
+        <p>EMI khatam hone ke baad monthly cost sirf <strong id="emiSaved">₹0</strong> reh jaayegi — <strong id="emiDiff">₹0</strong> ki bachat!</p>
+      </div>
+    </div>
+
+    <!-- TIPS -->
+    <div class="tips">
+      <div class="tip-card" data-num="1">
+        <div class="tip-icon">🛞</div>
+        <div class="tip-title">Tyre Pressure Check Karo</div>
+        <div class="tip-text">Monthly ek baar pressure aur alignment check karo. Sahi pressure se life 20-30% badh jaati hai aur mileage bhi improve hota hai.</div>
+      </div>
+      <div class="tip-card" data-num="2">
+        <div class="tip-icon">⛽</div>
+        <div class="tip-title">Highway pe Cruise Karo</div>
+        <div class="tip-text">60-80 km/h steady speed pe highway mileage 15-20% better milta hai. Aggressive acceleration se bachna — fuel ka sabse bada dushman!</div>
+      </div>
+      <div class="tip-card" data-num="3">
+        <div class="tip-icon">🔧</div>
+        <div class="tip-title">Local vs Authorized</div>
+        <div class="tip-text">Warranty ke baad trusted local mechanic use karo — authorized se 25-40% sasta milta hai same quality parts pe. Parts khud Amazon ya Safexbikes se le aao.</div>
+      </div>
+    </div>
+
+  </div><!-- /grid -->
+</div><!-- /wrapper -->
+
+<script>
+  function syncVal(sliderId, displayId) {
+    const val = document.getElementById(sliderId).value;
+    const el = document.getElementById(displayId);
+    if (sliderId === 'monthlyKm') el.textContent = Number(val).toLocaleString('en-IN');
+    else el.textContent = Number(val).toLocaleString('en-IN');
+  }
+
+  function fmt(n) {
+    return '₹' + Math.round(n).toLocaleString('en-IN');
+  }
+
+  const rows = [
+    { id: 'fuel',        icon: '⛽', name: 'Fuel',               color: '#e8455a' },
+    { id: 'maint',       icon: '🔧', name: 'Maintenance/Service', color: '#f5a623' },
+    { id: 'tyre',        icon: '🛞', name: 'Tyres',              color: '#f5a623' },
+    { id: 'consumables', icon: '🧴', name: 'Consumables',        color: '#f5a623' },
+    { id: 'insurance',   icon: '📋', name: 'Insurance',          color: '#3d8ef5' },
+    { id: 'emi',         icon: '🏦', name: 'EMI',                color: '#9b59b6' },
+    { id: 'battery',     icon: '🔋', name: 'Battery',            color: '#2ecc71' },
+    { id: 'acgas',       icon: '❄️', name: 'AC Gas',             color: '#2ecc71' },
+    { id: 'puc',         icon: '📄', name: 'PUC Certificate',    color: '#2ecc71' },
+  ];
+
+  function calc() {
+    const km       = parseFloat(document.getElementById('monthlyKm').value) || 0;
+    const mileage  = parseFloat(document.getElementById('mileage').value) || 1;
+    const fp       = parseFloat(document.getElementById('fuelPrice').value) || 0;
+    const maint    = parseFloat(document.getElementById('maintenance').value) || 0;
+    const tyreCost = parseFloat(document.getElementById('tyreCost').value) || 0;
+    const tyreLife = parseFloat(document.getElementById('tyreLife').value) || 1;
+    const cons     = parseFloat(document.getElementById('consumables').value) || 0;
+    const insYear  = parseFloat(document.getElementById('insurance').value) || 0;
+    const emi      = parseFloat(document.getElementById('emi').value) || 0;
+    const puc      = parseFloat(document.getElementById('puc').value) || 0;
+    const batt     = parseFloat(document.getElementById('battery').value) || 0;
+    const battLife = parseFloat(document.getElementById('batteryLife').value) || 1;
+    const ac       = parseFloat(document.getElementById('acGas').value) || 0;
+    const acLife   = parseFloat(document.getElementById('acLife').value) || 1;
+
+    const fuelLitres = km / mileage;
+    const fuelCost   = fuelLitres * fp;
+    const tyreMo     = (4 * tyreCost) / (tyreLife / km);
+    const insMo      = insYear / 12;
+    const battMo     = batt / battLife;
+    const acMo       = ac / acLife;
+    const pucMo      = (puc * 2) / 12;
+
+    const costs = {
+      fuel:        fuelCost,
+      maint:       maint,
+      tyre:        tyreMo,
+      consumables: cons,
+      insurance:   insMo,
+      emi:         emi,
+      battery:     battMo,
+      acgas:       acMo,
+      puc:         pucMo,
+    };
+
+    const total = Object.values(costs).reduce((a,b) => a+b, 0);
+    const afterEmiTotal = total - emi;
+    const perKm = total / km;
+
+    document.getElementById('totalMonthly').textContent = fmt(total);
+    document.getElementById('perKmCost').textContent =
+      fmt(perKm) + ' per km  |  ' + fmt(total * 12) + ' per year';
+    document.getElementById('fuelPct').textContent =
+      total > 0 ? Math.round((fuelCost / total) * 100) + '%' : '0%';
+    document.getElementById('afterEmi').textContent = fmt(afterEmiTotal);
+    document.getElementById('yearlyTotal').textContent = fmt(total * 12);
+
+    // EMI note
+    const emiNote = document.getElementById('emiNote');
+    if (emi > 0) {
+      emiNote.style.display = 'flex';
+      document.getElementById('emiSaved').textContent = fmt(afterEmiTotal);
+      document.getElementById('emiDiff').textContent = fmt(emi);
+    } else {
+      emiNote.style.display = 'none';
+    }
+
+    // Breakdown rows
+    const bd = document.getElementById('breakdown');
+    bd.innerHTML = rows.map(r => {
+      const val = costs[r.id];
+      const pct = total > 0 ? (val / total * 100) : 0;
+      if (val < 0.5) return '';
+      return `
+        <div class="b-row">
+          <div class="b-left">
+            <span class="b-icon">${r.icon}</span>
+            <span class="b-name">${r.name}</span>
+          </div>
+          <div class="b-bar-wrap">
+            <div class="b-bar" style="width:${Math.min(100,pct)}%;background:${r.color}"></div>
+          </div>
+          <span class="b-amount">${fmt(val)}</span>
+        </div>`;
+    }).join('') + `
+      <div class="b-row total">
+        <div class="b-left">
+          <span class="b-icon">💰</span>
+          <span class="b-name">TOTAL</span>
+        </div>
+        <div class="b-bar-wrap"></div>
+        <span class="b-amount">${fmt(total)}</span>
+      </div>`;
+  }
+
+  // Init
+  calc();
+</script>
+</body>
+</html>
