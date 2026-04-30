@@ -22,15 +22,26 @@
   --radius:14px;
 }
 html{scroll-behavior:smooth}
+html,body{
+  height:100%;
+}
 body{
   background:var(--bg);
   color:var(--text);
   font-family:'DM Sans',sans-serif;
   font-size:15px;
   min-height:100vh;
-  padding-bottom:130px;
   max-width:480px;
   margin:0 auto;
+  display:flex;
+  flex-direction:column;
+}
+.page-scroll{
+  flex:1;
+  overflow-y:auto;
+  overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
+  padding-bottom:16px;
 }
 
 /* ── HEADER ── */
@@ -197,10 +208,13 @@ input[type=range]::-webkit-slider-thumb{
 
 /* ── STICKY RESULT ── */
 .sticky-result{
-  position:fixed;bottom:0;left:50%;transform:translateX(-50%);
-  width:100%;max-width:480px;
+  position:sticky;
+  bottom:0;
+  width:100%;
   background:linear-gradient(180deg,rgba(12,14,18,0) 0%,var(--bg) 15%);
-  padding:12px 16px 20px;z-index:100;
+  padding:12px 16px 20px;
+  z-index:100;
+  flex-shrink:0;
 }
 .result-card{
   background:linear-gradient(135deg,#1c2030,#141720);
@@ -309,6 +323,7 @@ input[type=range]::-webkit-slider-thumb{
 </style>
 </head>
 <body>
+<div class="page-scroll">
 
 <!-- HEADER -->
 <div class="top-bar">
@@ -628,6 +643,8 @@ input[type=range]::-webkit-slider-thumb{
 
 </div><!-- /sections -->
 
+</div><!-- /page-scroll -->
+
 <!-- STICKY RESULT -->
 <div class="sticky-result">
   <div class="result-card">
@@ -657,6 +674,7 @@ input[type=range]::-webkit-slider-thumb{
 </div>
 
 <!-- BREAKDOWN MODAL -->
+
 <div class="overlay" id="overlay" onclick="closeModal(event)">
   <div class="modal" id="modal">
     <div class="modal-handle"></div>
@@ -874,6 +892,15 @@ function closeModal(e) { if (e.target === document.getElementById('overlay')) cl
 
 // Init
 setVehicle('bike');
+
+// Fix: scroll focused input into view above keyboard on mobile
+document.querySelectorAll('input, select').forEach(function(el){
+  el.addEventListener('focus', function(){
+    setTimeout(function(){
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 350);
+  });
+});
 </script>
 </body>
 </html>
