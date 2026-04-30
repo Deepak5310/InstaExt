@@ -2,845 +2,878 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Car Running Cost Calculator</title>
-<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>Vehicle Running Cost</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  :root {
-    --bg: #0d0f14;
-    --surface: #13161e;
-    --card: #1a1e28;
-    --border: #2a2f3f;
-    --amber: #f5a623;
-    --amber-dim: #b87b1a;
-    --red: #e8455a;
-    --green: #2ecc71;
-    --text: #e8ecf4;
-    --muted: #6b7490;
-    --accent: #3d8ef5;
-  }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Outfit', sans-serif;
-    min-height: 100vh;
-    padding: 0;
-    overflow-x: hidden;
-  }
-
-  /* Noise texture overlay */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-    pointer-events: none;
-    z-index: 0;
-    opacity: 0.5;
-  }
-
-  .wrapper {
-    position: relative;
-    z-index: 1;
-    max-width: 960px;
-    margin: 0 auto;
-    padding: 2rem 1.25rem 4rem;
-  }
-
-  /* HEADER */
-  header {
-    text-align: center;
-    margin-bottom: 2.5rem;
-    animation: fadeDown 0.6s ease both;
-  }
-
-  header .badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    background: rgba(245,166,35,0.12);
-    border: 1px solid rgba(245,166,35,0.3);
-    color: var(--amber);
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 0.75rem;
-    font-weight: 600;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    padding: 0.3rem 0.9rem;
-    border-radius: 99px;
-    margin-bottom: 1rem;
-  }
-
-  header h1 {
-    font-family: 'Rajdhani', sans-serif;
-    font-size: clamp(2rem, 5vw, 3.2rem);
-    font-weight: 700;
-    letter-spacing: 0.03em;
-    line-height: 1.1;
-    background: linear-gradient(135deg, #f5a623, #fff 60%, #6b7490);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  header p {
-    color: var(--muted);
-    font-size: 0.95rem;
-    margin-top: 0.5rem;
-  }
-
-  /* GRID LAYOUT */
-  .grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1.25rem;
-  }
-
-  @media (max-width: 640px) {
-    .grid { grid-template-columns: 1fr; }
-  }
-
-  /* SECTION CARDS */
-  .section {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 1.5rem;
-    animation: fadeUp 0.5s ease both;
-  }
-
-  .section:nth-child(1) { animation-delay: 0.05s; }
-  .section:nth-child(2) { animation-delay: 0.1s; }
-  .section:nth-child(3) { animation-delay: 0.15s; }
-  .section:nth-child(4) { animation-delay: 0.2s; }
-
-  .section-title {
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 0.72rem;
-    font-weight: 600;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--amber);
-    margin-bottom: 1.25rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  .section-title::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: linear-gradient(to right, var(--amber-dim), transparent);
-    opacity: 0.4;
-  }
-
-  /* FORM FIELDS */
-  .field {
-    margin-bottom: 1.1rem;
-  }
-
-  .field:last-child { margin-bottom: 0; }
-
-  label {
-    display: block;
-    font-size: 0.8rem;
-    color: var(--muted);
-    margin-bottom: 0.35rem;
-    font-weight: 500;
-  }
-
-  .input-wrap {
-    display: flex;
-    align-items: center;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    overflow: hidden;
-    transition: border-color 0.2s;
-  }
-
-  .input-wrap:focus-within {
-    border-color: var(--amber);
-    box-shadow: 0 0 0 3px rgba(245,166,35,0.08);
-  }
-
-  .input-wrap input, .input-wrap select {
-    background: transparent;
-    border: none;
-    outline: none;
-    color: var(--text);
-    font-family: 'Outfit', sans-serif;
-    font-size: 0.95rem;
-    font-weight: 500;
-    padding: 0.6rem 0.9rem;
-    width: 100%;
-    -webkit-appearance: none;
-  }
-
-  .input-wrap select option {
-    background: var(--card);
-    color: var(--text);
-  }
-
-  .unit {
-    padding: 0 0.75rem;
-    color: var(--amber);
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 0.8rem;
-    font-weight: 600;
-    white-space: nowrap;
-    letter-spacing: 0.05em;
-    border-left: 1px solid var(--border);
-  }
-
-  /* SLIDER */
-  .slider-wrap {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-  }
-
-  input[type="range"] {
-    -webkit-appearance: none;
-    width: 100%;
-    height: 4px;
-    border-radius: 2px;
-    background: var(--border);
-    outline: none;
-    cursor: pointer;
-  }
-
-  input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    background: var(--amber);
-    box-shadow: 0 0 8px rgba(245,166,35,0.5);
-    cursor: pointer;
-    transition: transform 0.15s;
-  }
-
-  input[type="range"]::-webkit-slider-thumb:hover {
-    transform: scale(1.2);
-  }
-
-  .slider-val {
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 1.05rem;
-    font-weight: 700;
-    color: var(--amber);
-    min-width: 3.5rem;
-    text-align: right;
-  }
-
-  /* RESULTS PANEL */
-  .results {
-    grid-column: 1 / -1;
-    background: linear-gradient(135deg, #1a1e28, #13161e);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 1.75rem;
-    animation: fadeUp 0.5s 0.25s ease both;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .results::before {
-    content: '';
-    position: absolute;
-    top: -80px; right: -80px;
-    width: 220px; height: 220px;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(245,166,35,0.08), transparent 70%);
-    pointer-events: none;
-  }
-
-  /* BIG NUMBER */
-  .hero-cost {
-    text-align: center;
-    margin-bottom: 2rem;
-    padding-bottom: 1.75rem;
-    border-bottom: 1px solid var(--border);
-    position: relative;
-  }
-
-  .hero-cost .label {
-    font-size: 0.78rem;
-    color: var(--muted);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    margin-bottom: 0.4rem;
-  }
-
-  .hero-cost .amount {
-    font-family: 'Rajdhani', sans-serif;
-    font-size: clamp(2.8rem, 8vw, 4.5rem);
-    font-weight: 700;
-    color: var(--amber);
-    line-height: 1;
-    letter-spacing: -0.01em;
-  }
-
-  .hero-cost .sub {
-    color: var(--muted);
-    font-size: 0.82rem;
-    margin-top: 0.4rem;
-  }
-
-  /* STATS ROW */
-  .stats-row {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1rem;
-    margin-bottom: 2rem;
-  }
-
-  @media (max-width: 500px) {
-    .stats-row { grid-template-columns: 1fr 1fr; }
-  }
-
-  .stat-box {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 1rem;
-    text-align: center;
-  }
-
-  .stat-box .s-label {
-    font-size: 0.72rem;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    margin-bottom: 0.4rem;
-  }
-
-  .stat-box .s-val {
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--text);
-  }
-
-  .stat-box .s-val.green { color: var(--green); }
-  .stat-box .s-val.accent { color: var(--accent); }
-  .stat-box .s-val.red { color: var(--red); }
-
-  /* BREAKDOWN TABLE */
-  .breakdown {
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
-  }
-
-  .breakdown-title {
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 0.72rem;
-    color: var(--muted);
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    margin-bottom: 0.6rem;
-  }
-
-  .b-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.55rem 0.75rem;
-    border-radius: 8px;
-    transition: background 0.15s;
-    gap: 0.5rem;
-  }
-
-  .b-row:hover { background: rgba(255,255,255,0.03); }
-
-  .b-row.total {
-    background: rgba(245,166,35,0.08);
-    border: 1px solid rgba(245,166,35,0.2);
-    margin-top: 0.5rem;
-  }
-
-  .b-left {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    flex: 1;
-  }
-
-  .b-icon { font-size: 1rem; width: 1.4rem; text-align: center; }
-
-  .b-name {
-    font-size: 0.88rem;
-    color: var(--text);
-    opacity: 0.85;
-  }
-
-  .b-row.total .b-name {
-    font-weight: 600;
-    opacity: 1;
-    color: var(--amber);
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 1rem;
-    letter-spacing: 0.05em;
-  }
-
-  .b-bar-wrap {
-    flex: 1;
-    max-width: 80px;
-    height: 3px;
-    background: var(--border);
-    border-radius: 2px;
-    overflow: hidden;
-  }
-
-  @media (max-width: 480px) { .b-bar-wrap { display: none; } }
-
-  .b-bar {
-    height: 100%;
-    border-radius: 2px;
-    background: var(--amber);
-    transition: width 0.6s cubic-bezier(0.4,0,0.2,1);
-  }
-
-  .b-amount {
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 0.95rem;
-    font-weight: 600;
-    color: var(--text);
-    min-width: 75px;
-    text-align: right;
-  }
-
-  .b-row.total .b-amount {
-    font-size: 1.1rem;
-    color: var(--amber);
-  }
-
-  /* POST EMI NOTE */
-  .emi-note {
-    margin-top: 1.25rem;
-    background: rgba(46,204,113,0.07);
-    border: 1px solid rgba(46,204,113,0.2);
-    border-radius: 10px;
-    padding: 0.85rem 1rem;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-  }
-
-  .emi-note .icon { font-size: 1.2rem; }
-
-  .emi-note p {
-    font-size: 0.85rem;
-    color: var(--text);
-    opacity: 0.85;
-  }
-
-  .emi-note strong { color: var(--green); }
-
-  /* TIPS */
-  .tips {
-    grid-column: 1 / -1;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1rem;
-    animation: fadeUp 0.5s 0.3s ease both;
-  }
-
-  @media (max-width: 640px) {
-    .tips { grid-template-columns: 1fr; }
-  }
-
-  .tip-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 1.1rem;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .tip-card::before {
-    content: attr(data-num);
-    position: absolute;
-    right: -0.5rem; top: -0.5rem;
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 5rem;
-    font-weight: 700;
-    color: var(--amber);
-    opacity: 0.04;
-    line-height: 1;
-  }
-
-  .tip-icon { font-size: 1.4rem; margin-bottom: 0.6rem; }
-
-  .tip-title {
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 0.95rem;
-    font-weight: 600;
-    color: var(--amber);
-    margin-bottom: 0.35rem;
-    letter-spacing: 0.03em;
-  }
-
-  .tip-text {
-    font-size: 0.8rem;
-    color: var(--muted);
-    line-height: 1.5;
-  }
-
-  /* ANIMATIONS */
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(18px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-
-  @keyframes fadeDown {
-    from { opacity: 0; transform: translateY(-12px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-
-  /* SCROLLBAR */
-  ::-webkit-scrollbar { width: 6px; }
-  ::-webkit-scrollbar-track { background: var(--bg); }
-  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#0c0e12;
+  --surf:#141720;
+  --card:#1c2030;
+  --border:#252a3a;
+  --amber:#ff9f1c;
+  --amber2:#ffbf69;
+  --red:#ff4757;
+  --green:#2ed573;
+  --blue:#54a0ff;
+  --text:#eef0f6;
+  --sub:#8890aa;
+  --radius:14px;
+}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'DM Sans',sans-serif;
+  font-size:15px;
+  min-height:100vh;
+  padding-bottom:130px;
+  max-width:480px;
+  margin:0 auto;
+}
+
+/* ── HEADER ── */
+.top-bar{
+  background:linear-gradient(180deg,rgba(255,159,28,0.12) 0%,transparent 100%);
+  padding:24px 20px 20px;
+  position:sticky;top:0;z-index:50;
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--border);
+}
+.app-title{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:22px;font-weight:800;
+  letter-spacing:0.04em;text-transform:uppercase;
+  color:var(--amber);
+  display:flex;align-items:center;gap:8px;
+  margin-bottom:14px;
+}
+.app-title svg{width:22px;height:22px;fill:var(--amber)}
+
+/* Vehicle type toggle */
+.vtype{
+  display:grid;grid-template-columns:1fr 1fr;
+  background:var(--surf);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:3px;gap:3px;
+}
+.vtype-btn{
+  display:flex;align-items:center;justify-content:center;
+  gap:7px;padding:9px 12px;
+  border-radius:8px;border:none;
+  background:transparent;color:var(--sub);
+  font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;
+  cursor:pointer;transition:all 0.22s;
+}
+.vtype-btn.active{
+  background:var(--amber);color:#0c0e12;
+  box-shadow:0 2px 12px rgba(255,159,28,0.35);
+}
+.vtype-btn span{font-size:18px}
+
+/* ── SECTIONS ── */
+.sections{padding:16px 16px 0}
+
+.sec{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  margin-bottom:12px;
+  overflow:hidden;
+}
+
+.sec-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 16px;
+  cursor:pointer;
+  user-select:none;
+}
+.sec-head-left{display:flex;align-items:center;gap:10px}
+.sec-icon{
+  width:36px;height:36px;border-radius:10px;
+  background:rgba(255,159,28,0.1);border:1px solid rgba(255,159,28,0.2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:17px;flex-shrink:0;
+}
+.sec-label{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:var(--text)}
+.sec-sublabel{font-size:11px;color:var(--sub);margin-top:1px;font-weight:400}
+.sec-arrow{
+  width:26px;height:26px;border-radius:50%;
+  background:var(--surf);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--sub);font-size:13px;
+  transition:transform 0.25s;flex-shrink:0;
+}
+.sec.open .sec-arrow{transform:rotate(180deg);color:var(--amber)}
+
+.sec-body{
+  padding:0 16px 16px;
+  display:none;
+}
+.sec.open .sec-body{display:block}
+
+/* ── FIELDS ── */
+.field{margin-bottom:14px}
+.field:last-child{margin-bottom:0}
+.fl{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.fl label{font-size:13px;color:var(--sub);font-weight:500}
+.fl .hint{font-size:11px;color:rgba(255,159,28,0.7);font-weight:600;background:rgba(255,159,28,0.08);padding:2px 7px;border-radius:20px}
+
+.inp-wrap{
+  display:flex;align-items:center;
+  background:var(--surf);border:1.5px solid var(--border);
+  border-radius:10px;overflow:hidden;
+  transition:border-color 0.2s,box-shadow 0.2s;
+}
+.inp-wrap:focus-within{border-color:var(--amber);box-shadow:0 0 0 3px rgba(255,159,28,0.1)}
+
+.inp-pre,.inp-suf{
+  padding:0 12px;
+  color:var(--amber);font-size:12px;font-weight:700;
+  font-family:'Barlow Condensed',sans-serif;letter-spacing:0.06em;
+  white-space:nowrap;flex-shrink:0;
+}
+.inp-pre{border-right:1px solid var(--border)}
+.inp-suf{border-left:1px solid var(--border)}
+
+.inp-wrap input,.inp-wrap select{
+  background:transparent;border:none;outline:none;
+  color:var(--text);font-family:'DM Sans',sans-serif;
+  font-size:16px;font-weight:600;
+  padding:12px 14px;width:100%;min-width:0;
+}
+.inp-wrap select option{background:var(--card)}
+.inp-wrap input[type=number]::-webkit-inner-spin-button{opacity:0}
+
+/* Slider */
+.slider-row{display:flex;align-items:center;gap:12px;margin-top:4px}
+input[type=range]{
+  -webkit-appearance:none;flex:1;height:5px;
+  border-radius:3px;background:var(--border);outline:none;cursor:pointer;
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:22px;height:22px;
+  border-radius:50%;background:var(--amber);
+  box-shadow:0 0 10px rgba(255,159,28,0.5);cursor:pointer;
+}
+.slider-display{
+  background:var(--surf);border:1px solid var(--border);
+  border-radius:8px;padding:6px 10px;
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:16px;font-weight:700;color:var(--amber);
+  min-width:72px;text-align:center;
+}
+
+/* Toggle pill */
+.toggle-pill{
+  display:flex;background:var(--surf);
+  border:1px solid var(--border);border-radius:8px;
+  padding:3px;gap:3px;margin-bottom:12px;
+}
+.pill-btn{
+  flex:1;padding:8px;border:none;border-radius:6px;
+  background:transparent;color:var(--sub);
+  font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;
+  cursor:pointer;transition:all 0.2s;
+}
+.pill-btn.active{background:rgba(255,159,28,0.15);color:var(--amber);border:1px solid rgba(255,159,28,0.3)}
+
+/* Service calc preview */
+.svc-preview{
+  background:rgba(255,159,28,0.06);
+  border:1px solid rgba(255,159,28,0.15);
+  border-radius:10px;padding:11px 14px;margin-top:12px;
+  display:flex;align-items:center;gap:10px;
+}
+.svc-preview .eq{font-size:19px}
+.svc-preview p{font-size:13px;color:var(--sub);line-height:1.5}
+.svc-preview strong{color:var(--amber)}
+
+/* Divider */
+.divider{height:1px;background:var(--border);margin:14px 0}
+
+/* ── STICKY RESULT ── */
+.sticky-result{
+  position:fixed;bottom:0;left:50%;transform:translateX(-50%);
+  width:100%;max-width:480px;
+  background:linear-gradient(180deg,rgba(12,14,18,0) 0%,var(--bg) 15%);
+  padding:12px 16px 20px;z-index:100;
+}
+.result-card{
+  background:linear-gradient(135deg,#1c2030,#141720);
+  border:1px solid var(--border);
+  border-radius:16px;
+  overflow:hidden;
+  box-shadow:0 -4px 40px rgba(0,0,0,0.5);
+}
+.result-top{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 16px;
+  border-bottom:1px solid var(--border);
+}
+.result-main .rl{font-size:11px;color:var(--sub);text-transform:uppercase;letter-spacing:0.08em;font-weight:600}
+.result-main .ra{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:36px;font-weight:800;color:var(--amber);line-height:1.05;
+}
+.result-main .rs{font-size:11px;color:var(--sub);margin-top:2px}
+.result-expand-btn{
+  background:var(--surf);border:1px solid var(--border);
+  border-radius:10px;padding:8px 14px;
+  color:var(--sub);font-size:12px;font-weight:600;
+  cursor:pointer;border:1px solid var(--border);
+  transition:all 0.2s;white-space:nowrap;
+}
+.result-expand-btn:active{background:var(--card)}
+
+/* Mini stats */
+.mini-stats{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  border-top:1px solid var(--border);
+}
+.mini-stat{
+  padding:10px 12px;text-align:center;
+  border-right:1px solid var(--border);
+}
+.mini-stat:last-child{border-right:none}
+.mini-stat .ml{font-size:10px;color:var(--sub);text-transform:uppercase;letter-spacing:0.06em}
+.mini-stat .mv{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;margin-top:2px}
+.mv.red{color:var(--red)}.mv.green{color:var(--green)}.mv.blue{color:var(--blue)}
+
+/* ── BREAKDOWN MODAL ── */
+.overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,0.7);
+  z-index:200;display:none;align-items:flex-end;
+  backdrop-filter:blur(4px);
+}
+.overlay.show{display:flex}
+.modal{
+  background:var(--surf);border-radius:20px 20px 0 0;
+  width:100%;max-width:480px;margin:0 auto;
+  padding:0 0 32px;
+  max-height:85vh;overflow-y:auto;
+  animation:slideUp 0.28s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes slideUp{from{transform:translateY(60px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-handle{width:40px;height:4px;border-radius:2px;background:var(--border);margin:12px auto 0}
+.modal-head{
+  padding:16px 20px 14px;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.modal-head h2{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;letter-spacing:0.04em}
+.modal-close{
+  width:32px;height:32px;border-radius:50%;
+  background:var(--card);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;font-size:16px;color:var(--sub);
+}
+
+.bk-list{padding:12px 20px}
+.bk-row{
+  display:flex;align-items:center;gap:12px;
+  padding:11px 0;border-bottom:1px solid rgba(37,42,58,0.6);
+}
+.bk-row:last-child{border-bottom:none}
+.bk-row.total-row{
+  background:rgba(255,159,28,0.06);
+  border:1px solid rgba(255,159,28,0.2);
+  border-radius:10px;padding:11px 12px;margin-top:8px;
+}
+.bk-em{font-size:20px;width:28px;text-align:center;flex-shrink:0}
+.bk-info{flex:1;min-width:0}
+.bk-name{font-size:14px;font-weight:500;color:var(--text)}
+.bk-sub{font-size:11px;color:var(--sub);margin-top:2px}
+.bk-bar-col{width:50px;flex-shrink:0}
+.bk-bar-bg{height:4px;background:var(--border);border-radius:2px;overflow:hidden}
+.bk-bar-fg{height:100%;border-radius:2px;transition:width 0.5s ease}
+.bk-pct{font-size:10px;color:var(--sub);margin-top:3px;text-align:right}
+.bk-amt{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;color:var(--text);text-align:right;min-width:70px}
+.bk-row.total-row .bk-amt{font-size:20px;color:var(--amber)}
+.bk-row.total-row .bk-name{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:16px;text-transform:uppercase;letter-spacing:0.05em;color:var(--amber)}
+
+.emi-info{
+  margin:8px 20px 0;
+  background:rgba(46,213,115,0.07);
+  border:1px solid rgba(46,213,115,0.2);
+  border-radius:10px;padding:12px;
+  font-size:13px;color:var(--sub);line-height:1.6;
+}
+.emi-info strong{color:var(--green)}
+
+/* ── Utils ── */
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 </style>
 </head>
 <body>
-<div class="wrapper">
 
-  <header>
-    <div class="badge">🚗 India • ₹ INR</div>
-    <h1>Car Running Cost<br/>Calculator</h1>
-    <p>Apni gaadi ka poora monthly kharcha ek jagah dekho</p>
-  </header>
+<!-- HEADER -->
+<div class="top-bar">
+  <div class="app-title">
+    <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z"/></svg>
+    Running Cost
+  </div>
+  <div class="vtype">
+    <button class="vtype-btn active" id="btn-bike" onclick="setVehicle('bike')">
+      <span>🏍️</span> Bike
+    </button>
+    <button class="vtype-btn" id="btn-car" onclick="setVehicle('car')">
+      <span>🚗</span> Car
+    </button>
+  </div>
+</div>
 
-  <div class="grid">
+<!-- SECTIONS -->
+<div class="sections">
 
-    <!-- SECTION 1: Basic Info -->
-    <div class="section">
-      <div class="section-title">📌 Basic Info</div>
+  <!-- 1. Basics -->
+  <div class="sec open" id="sec-basics">
+    <div class="sec-head" onclick="toggleSec('sec-basics')">
+      <div class="sec-head-left">
+        <div class="sec-icon">⛽</div>
+        <div>
+          <div class="sec-label">Fuel & Mileage</div>
+          <div class="sec-sublabel">Monthly km, fuel type & price</div>
+        </div>
+      </div>
+      <div class="sec-arrow">▼</div>
+    </div>
+    <div class="sec-body">
 
       <div class="field">
-        <label>Monthly Kilometers</label>
-        <div class="slider-wrap">
-          <input type="range" id="monthlyKm" min="500" max="6000" step="100" value="2750" oninput="syncVal('monthlyKm','kmVal');calc()"/>
-          <span class="slider-val" id="kmVal">2750</span>
+        <div class="fl"><label>Monthly Kilometers</label><span class="hint" id="km-hint">2,500 km</span></div>
+        <div class="slider-row">
+          <input type="range" id="monthlyKm" min="200" max="8000" step="50" value="2500"
+                 oninput="document.getElementById('km-hint').textContent=fmtNum(this.value)+' km';calc()"/>
         </div>
-        <div style="display:flex;justify-content:space-between;margin-top:4px;">
-          <span style="font-size:0.7rem;color:var(--muted)">500 km</span>
-          <span style="font-size:0.7rem;color:var(--muted)">6000 km</span>
+        <div style="display:flex;justify-content:space-between;margin-top:4px">
+          <span style="font-size:11px;color:var(--sub)">200</span>
+          <span style="font-size:11px;color:var(--sub)">8000 km</span>
+        </div>
+      </div>
+
+      <div class="row2">
+        <div class="field">
+          <div class="fl"><label>Fuel Type</label></div>
+          <div class="inp-wrap">
+            <select id="fuelType" onchange="onFuelTypeChange()">
+              <option value="petrol">Petrol</option>
+              <option value="diesel">Diesel</option>
+              <option value="cng">CNG</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <div class="fl"><label>Fuel Price</label></div>
+          <div class="inp-wrap">
+            <span class="inp-pre">₹</span>
+            <input type="number" id="fuelPrice" value="97" min="50" max="200" oninput="calc()"/>
+          </div>
         </div>
       </div>
 
       <div class="field">
-        <label>Fuel Type</label>
-        <div class="input-wrap">
-          <select id="fuelType" onchange="calc()">
-            <option value="petrol">Petrol</option>
-            <option value="diesel" selected>Diesel</option>
-            <option value="cng">CNG</option>
-          </select>
+        <div class="fl">
+          <label>Real-world Mileage</label>
+          <span class="hint" id="mileage-unit">km/L</span>
+        </div>
+        <div class="inp-wrap">
+          <input type="number" id="mileage" value="40" min="5" max="100" oninput="calc()"/>
+          <span class="inp-suf" id="mileage-suf">KM/L</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 2. Service -->
+  <div class="sec open" id="sec-service">
+    <div class="sec-head" onclick="toggleSec('sec-service')">
+      <div class="sec-head-left">
+        <div class="sec-icon">🔧</div>
+        <div>
+          <div class="sec-label">Service</div>
+          <div class="sec-sublabel">Interval-based calculation</div>
+        </div>
+      </div>
+      <div class="sec-arrow">▼</div>
+    </div>
+    <div class="sec-body">
+
+      <div class="field">
+        <div class="fl"><label>Service Cost (per visit)</label></div>
+        <div class="inp-wrap">
+          <span class="inp-pre">₹</span>
+          <input type="number" id="svcCost" value="1500" min="0" oninput="calc()"/>
         </div>
       </div>
 
       <div class="field">
-        <label>Fuel Price (₹/litre or ₹/kg for CNG)</label>
-        <div class="input-wrap">
-          <input type="number" id="fuelPrice" value="89" min="50" max="150" oninput="calc()"/>
-          <span class="unit">₹/L</span>
+        <div class="fl"><label>Service Interval — Kitne pe hoti hai?</label></div>
+        <div class="toggle-pill">
+          <button class="pill-btn active" id="svc-km-btn" onclick="setSvcMode('km')">📍 Km Based</button>
+          <button class="pill-btn" id="svc-mo-btn" onclick="setSvcMode('months')">📅 Time Based</button>
+        </div>
+
+        <div id="svc-km-field">
+          <div class="inp-wrap">
+            <input type="number" id="svcIntervalKm" value="3000" min="500" step="500" oninput="calc()"/>
+            <span class="inp-suf">KM</span>
+          </div>
+        </div>
+
+        <div id="svc-mo-field" style="display:none">
+          <div class="inp-wrap">
+            <input type="number" id="svcIntervalMo" value="6" min="1" max="24" oninput="calc()"/>
+            <span class="inp-suf">MONTHS</span>
+          </div>
+        </div>
+
+        <div class="svc-preview" id="svc-preview">
+          <span class="eq">🧮</span>
+          <p>Monthly service cost: <strong id="svcMonthly">₹0</strong><br/>
+          <span id="svcCalcNote" style="font-size:11px"></span></p>
         </div>
       </div>
 
       <div class="field">
-        <label>Real-world Mileage</label>
-        <div class="input-wrap">
-          <input type="number" id="mileage" value="19" min="5" max="50" oninput="calc()"/>
-          <span class="unit">KM/L</span>
+        <div class="fl"><label>Extra repairs / unscheduled kharcha (monthly avg)</label></div>
+        <div class="inp-wrap">
+          <span class="inp-pre">₹</span>
+          <input type="number" id="extraRepair" value="200" min="0" oninput="calc()"/>
         </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 3. Tyres -->
+  <div class="sec open" id="sec-tyres">
+    <div class="sec-head" onclick="toggleSec('sec-tyres')">
+      <div class="sec-head-left">
+        <div class="sec-icon">🛞</div>
+        <div>
+          <div class="sec-label">Tyres</div>
+          <div class="sec-sublabel" id="tyre-sublabel">2 tyres • life based</div>
+        </div>
+      </div>
+      <div class="sec-arrow">▼</div>
+    </div>
+    <div class="sec-body">
+
+      <div class="row2">
+        <div class="field">
+          <div class="fl"><label>Cost per Tyre</label></div>
+          <div class="inp-wrap">
+            <span class="inp-pre">₹</span>
+            <input type="number" id="tyreCost" value="2000" min="500" oninput="calc()"/>
+          </div>
+        </div>
+        <div class="field">
+          <div class="fl"><label>Tyre Life</label></div>
+          <div class="inp-wrap">
+            <input type="number" id="tyreLife" value="20000" min="5000" step="1000" oninput="calc()"/>
+            <span class="inp-suf">KM</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="svc-preview">
+        <span class="eq">🧮</span>
+        <p>Monthly tyre cost: <strong id="tyreMonthly">₹0</strong><br/>
+        <span id="tyreCalcNote" style="font-size:11px;color:var(--sub)"></span></p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 4. Insurance & EMI -->
+  <div class="sec" id="sec-finance">
+    <div class="sec-head" onclick="toggleSec('sec-finance')">
+      <div class="sec-head-left">
+        <div class="sec-icon">📋</div>
+        <div>
+          <div class="sec-label">Insurance & EMI</div>
+          <div class="sec-sublabel">Yearly insurance, loan EMI</div>
+        </div>
+      </div>
+      <div class="sec-arrow">▼</div>
+    </div>
+    <div class="sec-body">
+
+      <div class="row2">
+        <div class="field">
+          <div class="fl"><label>Insurance (Yearly)</label></div>
+          <div class="inp-wrap">
+            <span class="inp-pre">₹</span>
+            <input type="number" id="insurance" value="3000" min="0" oninput="calc()"/>
+          </div>
+        </div>
+        <div class="field">
+          <div class="fl"><label>Loan EMI / Month</label></div>
+          <div class="inp-wrap">
+            <span class="inp-pre">₹</span>
+            <input type="number" id="emi" value="0" min="0" oninput="calc()"/>
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="fl"><label>Monthly Toll (0 if none)</label></div>
+        <div class="inp-wrap">
+          <span class="inp-pre">₹</span>
+          <input type="number" id="toll" value="0" min="0" oninput="calc()"/>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 5. Other -->
+  <div class="sec" id="sec-other">
+    <div class="sec-head" onclick="toggleSec('sec-other')">
+      <div class="sec-head-left">
+        <div class="sec-icon">🔩</div>
+        <div>
+          <div class="sec-label">Other Consumables</div>
+          <div class="sec-sublabel">Battery, chain, PUC etc.</div>
+        </div>
+      </div>
+      <div class="sec-arrow">▼</div>
+    </div>
+    <div class="sec-body">
+
+      <div class="row2">
+        <div class="field">
+          <div class="fl"><label>Battery Cost</label></div>
+          <div class="inp-wrap">
+            <span class="inp-pre">₹</span>
+            <input type="number" id="battery" value="1200" min="0" oninput="calc()"/>
+          </div>
+        </div>
+        <div class="field">
+          <div class="fl"><label>Battery Life</label></div>
+          <div class="inp-wrap">
+            <input type="number" id="batteryLife" value="24" min="1" oninput="calc()"/>
+            <span class="inp-suf">MO</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- bike-specific -->
+      <div id="chain-field">
+        <div class="divider"></div>
+        <div class="row2">
+          <div class="field">
+            <div class="fl"><label>Chain Kit Cost</label></div>
+            <div class="inp-wrap">
+              <span class="inp-pre">₹</span>
+              <input type="number" id="chain" value="900" min="0" oninput="calc()"/>
+            </div>
+          </div>
+          <div class="field">
+            <div class="fl"><label>Chain Life</label></div>
+            <div class="inp-wrap">
+              <input type="number" id="chainLife" value="15000" min="1000" step="1000" oninput="calc()"/>
+              <span class="inp-suf">KM</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- car-specific -->
+      <div id="ac-field" style="display:none">
+        <div class="divider"></div>
+        <div class="row2">
+          <div class="field">
+            <div class="fl"><label>AC Gas Refill</label></div>
+            <div class="inp-wrap">
+              <span class="inp-pre">₹</span>
+              <input type="number" id="acGas" value="1500" min="0" oninput="calc()"/>
+            </div>
+          </div>
+          <div class="field">
+            <div class="fl"><label>Frequency</label></div>
+            <div class="inp-wrap">
+              <input type="number" id="acLife" value="24" min="1" oninput="calc()"/>
+              <span class="inp-suf">MO</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+      <div class="row2">
+        <div class="field">
+          <div class="fl"><label>PUC (per cert)</label></div>
+          <div class="inp-wrap">
+            <span class="inp-pre">₹</span>
+            <input type="number" id="puc" value="100" min="0" oninput="calc()"/>
+          </div>
+        </div>
+        <div class="field">
+          <div class="fl"><label>Frequency</label></div>
+          <div class="inp-wrap">
+            <input type="number" id="pucFreq" value="6" min="1" oninput="calc()"/>
+            <span class="inp-suf">MO</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- /sections -->
+
+<!-- STICKY RESULT -->
+<div class="sticky-result">
+  <div class="result-card">
+    <div class="result-top">
+      <div class="result-main">
+        <div class="rl">Monthly Running Cost</div>
+        <div class="ra" id="totalDisplay">₹0</div>
+        <div class="rs" id="perKmDisplay">₹0/km</div>
+      </div>
+      <button class="result-expand-btn" onclick="openModal()">Breakdown ↑</button>
+    </div>
+    <div class="mini-stats">
+      <div class="mini-stat">
+        <div class="ml">⛽ Fuel %</div>
+        <div class="mv red" id="fuelPct">0%</div>
+      </div>
+      <div class="mini-stat">
+        <div class="ml">📅 Yearly</div>
+        <div class="mv blue" id="yearlyDisp">₹0</div>
+      </div>
+      <div class="mini-stat">
+        <div class="ml">🚫 No EMI</div>
+        <div class="mv green" id="noEmiDisp">₹0</div>
       </div>
     </div>
+  </div>
+</div>
 
-    <!-- SECTION 2: Maintenance -->
-    <div class="section">
-      <div class="section-title">🔧 Maintenance & Tyres</div>
-
-      <div class="field">
-        <label>Monthly Maintenance / Service</label>
-        <div class="input-wrap">
-          <span class="unit" style="border-left:none;border-right:1px solid var(--border)">₹</span>
-          <input type="number" id="maintenance" value="2250" min="0" oninput="calc()"/>
-          <span class="unit">/mo</span>
-        </div>
-      </div>
-
-      <div class="field">
-        <label>Cost per Tyre (4 tyres)</label>
-        <div class="input-wrap">
-          <span class="unit" style="border-left:none;border-right:1px solid var(--border)">₹</span>
-          <input type="number" id="tyreCost" value="4750" min="1000" oninput="calc()"/>
-          <span class="unit">/tyre</span>
-        </div>
-      </div>
-
-      <div class="field">
-        <label>Tyre Life (km)</label>
-        <div class="slider-wrap">
-          <input type="range" id="tyreLife" min="10000" max="60000" step="1000" value="35000" oninput="syncVal('tyreLife','tyreLifeVal');calc()"/>
-          <span class="slider-val" id="tyreLifeVal">35000</span>
-        </div>
-      </div>
-
-      <div class="field">
-        <label>Other Consumables (oil, pads, wipers, etc.)</label>
-        <div class="input-wrap">
-          <span class="unit" style="border-left:none;border-right:1px solid var(--border)">₹</span>
-          <input type="number" id="consumables" value="720" min="0" oninput="calc()"/>
-          <span class="unit">/mo</span>
-        </div>
-      </div>
+<!-- BREAKDOWN MODAL -->
+<div class="overlay" id="overlay" onclick="closeModal(event)">
+  <div class="modal" id="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-head">
+      <h2>💰 Cost Breakdown</h2>
+      <div class="modal-close" onclick="closeOverlay()">✕</div>
     </div>
-
-    <!-- SECTION 3: Insurance & EMI -->
-    <div class="section">
-      <div class="section-title">📋 Insurance & EMI</div>
-
-      <div class="field">
-        <label>Insurance (Yearly)</label>
-        <div class="input-wrap">
-          <span class="unit" style="border-left:none;border-right:1px solid var(--border)">₹</span>
-          <input type="number" id="insurance" value="16000" min="0" oninput="calc()"/>
-          <span class="unit">/yr</span>
-        </div>
-      </div>
-
-      <div class="field">
-        <label>Monthly EMI (0 = fully paid)</label>
-        <div class="input-wrap">
-          <span class="unit" style="border-left:none;border-right:1px solid var(--border)">₹</span>
-          <input type="number" id="emi" value="6500" min="0" oninput="calc()"/>
-          <span class="unit">/mo</span>
-        </div>
-      </div>
-
-      <div class="field">
-        <label>PUC Certificate (Half-yearly)</label>
-        <div class="input-wrap">
-          <span class="unit" style="border-left:none;border-right:1px solid var(--border)">₹</span>
-          <input type="number" id="puc" value="150" min="0" oninput="calc()"/>
-          <span class="unit">×2/yr</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- SECTION 4: Other -->
-    <div class="section">
-      <div class="section-title">🔋 Other Costs</div>
-
-      <div class="field">
-        <label>Battery Replacement Cost</label>
-        <div class="input-wrap">
-          <span class="unit" style="border-left:none;border-right:1px solid var(--border)">₹</span>
-          <input type="number" id="battery" value="4500" min="0" oninput="calc()"/>
-        </div>
-      </div>
-
-      <div class="field">
-        <label>Battery Life (months)</label>
-        <div class="input-wrap">
-          <input type="number" id="batteryLife" value="36" min="1" oninput="calc()"/>
-          <span class="unit">months</span>
-        </div>
-      </div>
-
-      <div class="field">
-        <label>AC Gas Refill Cost</label>
-        <div class="input-wrap">
-          <span class="unit" style="border-left:none;border-right:1px solid var(--border)">₹</span>
-          <input type="number" id="acGas" value="1500" min="0" oninput="calc()"/>
-        </div>
-      </div>
-
-      <div class="field">
-        <label>AC Refill Frequency (months)</label>
-        <div class="input-wrap">
-          <input type="number" id="acLife" value="24" min="1" oninput="calc()"/>
-          <span class="unit">months</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- RESULTS -->
-    <div class="results" id="results">
-      <div class="hero-cost">
-        <div class="label">Total Monthly Running Cost</div>
-        <div class="amount" id="totalMonthly">₹0</div>
-        <div class="sub" id="perKmCost">₹0 per km &nbsp;|&nbsp; ₹0 per year</div>
-      </div>
-
-      <div class="stats-row">
-        <div class="stat-box">
-          <div class="s-label">⛽ Fuel Share</div>
-          <div class="s-val red" id="fuelPct">0%</div>
-        </div>
-        <div class="stat-box">
-          <div class="s-label">🏦 After EMI</div>
-          <div class="s-val green" id="afterEmi">₹0</div>
-        </div>
-        <div class="stat-box">
-          <div class="s-label">📅 Yearly Total</div>
-          <div class="s-val accent" id="yearlyTotal">₹0</div>
-        </div>
-      </div>
-
-      <div class="breakdown-title">Cost Breakdown</div>
-      <div class="breakdown" id="breakdown"></div>
-
-      <div class="emi-note" id="emiNote" style="display:none">
-        <span class="icon">✅</span>
-        <p>EMI khatam hone ke baad monthly cost sirf <strong id="emiSaved">₹0</strong> reh jaayegi — <strong id="emiDiff">₹0</strong> ki bachat!</p>
-      </div>
-    </div>
-
-    <!-- TIPS -->
-    <div class="tips">
-      <div class="tip-card" data-num="1">
-        <div class="tip-icon">🛞</div>
-        <div class="tip-title">Tyre Pressure Check Karo</div>
-        <div class="tip-text">Monthly ek baar pressure aur alignment check karo. Sahi pressure se life 20-30% badh jaati hai aur mileage bhi improve hota hai.</div>
-      </div>
-      <div class="tip-card" data-num="2">
-        <div class="tip-icon">⛽</div>
-        <div class="tip-title">Highway pe Cruise Karo</div>
-        <div class="tip-text">60-80 km/h steady speed pe highway mileage 15-20% better milta hai. Aggressive acceleration se bachna — fuel ka sabse bada dushman!</div>
-      </div>
-      <div class="tip-card" data-num="3">
-        <div class="tip-icon">🔧</div>
-        <div class="tip-title">Local vs Authorized</div>
-        <div class="tip-text">Warranty ke baad trusted local mechanic use karo — authorized se 25-40% sasta milta hai same quality parts pe. Parts khud Amazon ya Safexbikes se le aao.</div>
-      </div>
-    </div>
-
-  </div><!-- /grid -->
-</div><!-- /wrapper -->
+    <div class="bk-list" id="bkList"></div>
+    <div class="emi-info" id="emiInfo" style="display:none"></div>
+  </div>
+</div>
 
 <script>
-  function syncVal(sliderId, displayId) {
-    const val = document.getElementById(sliderId).value;
-    const el = document.getElementById(displayId);
-    if (sliderId === 'monthlyKm') el.textContent = Number(val).toLocaleString('en-IN');
-    else el.textContent = Number(val).toLocaleString('en-IN');
-  }
+let vehicleType = 'bike';
+let svcMode = 'km';
 
-  function fmt(n) {
-    return '₹' + Math.round(n).toLocaleString('en-IN');
-  }
+// Defaults per vehicle
+const DEFAULTS = {
+  bike: { mileage:40, fuelPrice:97, fuel:'petrol', tyreCost:2000, tyreCount:2, tyreLife:20000, battery:1200, batteryLife:24, insurance:3000, svcCost:1500, svcKm:3000, svcMo:6, monthlyKm:2500 },
+  car:  { mileage:19, fuelPrice:89, fuel:'diesel', tyreCost:4750, tyreCount:4, tyreLife:35000, battery:4500, batteryLife:36, insurance:16000, svcCost:3000, svcKm:7500, svcMo:6, monthlyKm:2750 }
+};
 
-  const rows = [
-    { id: 'fuel',        icon: '⛽', name: 'Fuel',               color: '#e8455a' },
-    { id: 'maint',       icon: '🔧', name: 'Maintenance/Service', color: '#f5a623' },
-    { id: 'tyre',        icon: '🛞', name: 'Tyres',              color: '#f5a623' },
-    { id: 'consumables', icon: '🧴', name: 'Consumables',        color: '#f5a623' },
-    { id: 'insurance',   icon: '📋', name: 'Insurance',          color: '#3d8ef5' },
-    { id: 'emi',         icon: '🏦', name: 'EMI',                color: '#9b59b6' },
-    { id: 'battery',     icon: '🔋', name: 'Battery',            color: '#2ecc71' },
-    { id: 'acgas',       icon: '❄️', name: 'AC Gas',             color: '#2ecc71' },
-    { id: 'puc',         icon: '📄', name: 'PUC Certificate',    color: '#2ecc71' },
-  ];
+function setVehicle(type) {
+  vehicleType = type;
+  document.getElementById('btn-bike').classList.toggle('active', type === 'bike');
+  document.getElementById('btn-car').classList.toggle('active', type === 'car');
 
-  function calc() {
-    const km       = parseFloat(document.getElementById('monthlyKm').value) || 0;
-    const mileage  = parseFloat(document.getElementById('mileage').value) || 1;
-    const fp       = parseFloat(document.getElementById('fuelPrice').value) || 0;
-    const maint    = parseFloat(document.getElementById('maintenance').value) || 0;
-    const tyreCost = parseFloat(document.getElementById('tyreCost').value) || 0;
-    const tyreLife = parseFloat(document.getElementById('tyreLife').value) || 1;
-    const cons     = parseFloat(document.getElementById('consumables').value) || 0;
-    const insYear  = parseFloat(document.getElementById('insurance').value) || 0;
-    const emi      = parseFloat(document.getElementById('emi').value) || 0;
-    const puc      = parseFloat(document.getElementById('puc').value) || 0;
-    const batt     = parseFloat(document.getElementById('battery').value) || 0;
-    const battLife = parseFloat(document.getElementById('batteryLife').value) || 1;
-    const ac       = parseFloat(document.getElementById('acGas').value) || 0;
-    const acLife   = parseFloat(document.getElementById('acLife').value) || 1;
+  const d = DEFAULTS[type];
+  document.getElementById('mileage').value    = d.mileage;
+  document.getElementById('fuelPrice').value  = d.fuelPrice;
+  document.getElementById('fuelType').value   = d.fuel;
+  document.getElementById('tyreCost').value   = d.tyreCost;
+  document.getElementById('tyreLife').value   = d.tyreLife;
+  document.getElementById('battery').value    = d.battery;
+  document.getElementById('batteryLife').value= d.batteryLife;
+  document.getElementById('insurance').value  = d.insurance;
+  document.getElementById('svcCost').value    = d.svcCost;
+  document.getElementById('svcIntervalKm').value = d.svcKm;
+  document.getElementById('svcIntervalMo').value = d.svcMo;
 
-    const fuelLitres = km / mileage;
-    const fuelCost   = fuelLitres * fp;
-    const tyreMo     = (4 * tyreCost) / (tyreLife / km);
-    const insMo      = insYear / 12;
-    const battMo     = batt / battLife;
-    const acMo       = ac / acLife;
-    const pucMo      = (puc * 2) / 12;
+  const sl = document.getElementById('monthlyKm');
+  sl.value = d.monthlyKm;
+  document.getElementById('km-hint').textContent = fmtNum(d.monthlyKm) + ' km';
 
-    const costs = {
-      fuel:        fuelCost,
-      maint:       maint,
-      tyre:        tyreMo,
-      consumables: cons,
-      insurance:   insMo,
-      emi:         emi,
-      battery:     battMo,
-      acgas:       acMo,
-      puc:         pucMo,
-    };
+  // Show/hide vehicle-specific fields
+  document.getElementById('chain-field').style.display = type === 'bike' ? '' : 'none';
+  document.getElementById('ac-field').style.display    = type === 'car'  ? '' : 'none';
 
-    const total = Object.values(costs).reduce((a,b) => a+b, 0);
-    const afterEmiTotal = total - emi;
-    const perKm = total / km;
+  // Tyre sublabel
+  document.getElementById('tyre-sublabel').textContent = (type === 'bike' ? '2' : '4') + ' tyres • life based';
 
-    document.getElementById('totalMonthly').textContent = fmt(total);
-    document.getElementById('perKmCost').textContent =
-      fmt(perKm) + ' per km  |  ' + fmt(total * 12) + ' per year';
-    document.getElementById('fuelPct').textContent =
-      total > 0 ? Math.round((fuelCost / total) * 100) + '%' : '0%';
-    document.getElementById('afterEmi').textContent = fmt(afterEmiTotal);
-    document.getElementById('yearlyTotal').textContent = fmt(total * 12);
+  // Mileage suffix
+  const suf = document.getElementById('fuelType').value === 'cng' ? 'KM/KG' : 'KM/L';
+  document.getElementById('mileage-suf').textContent = suf;
+  document.getElementById('mileage-unit').textContent = suf.toLowerCase();
 
-    // EMI note
-    const emiNote = document.getElementById('emiNote');
-    if (emi > 0) {
-      emiNote.style.display = 'flex';
-      document.getElementById('emiSaved').textContent = fmt(afterEmiTotal);
-      document.getElementById('emiDiff').textContent = fmt(emi);
-    } else {
-      emiNote.style.display = 'none';
-    }
-
-    // Breakdown rows
-    const bd = document.getElementById('breakdown');
-    bd.innerHTML = rows.map(r => {
-      const val = costs[r.id];
-      const pct = total > 0 ? (val / total * 100) : 0;
-      if (val < 0.5) return '';
-      return `
-        <div class="b-row">
-          <div class="b-left">
-            <span class="b-icon">${r.icon}</span>
-            <span class="b-name">${r.name}</span>
-          </div>
-          <div class="b-bar-wrap">
-            <div class="b-bar" style="width:${Math.min(100,pct)}%;background:${r.color}"></div>
-          </div>
-          <span class="b-amount">${fmt(val)}</span>
-        </div>`;
-    }).join('') + `
-      <div class="b-row total">
-        <div class="b-left">
-          <span class="b-icon">💰</span>
-          <span class="b-name">TOTAL</span>
-        </div>
-        <div class="b-bar-wrap"></div>
-        <span class="b-amount">${fmt(total)}</span>
-      </div>`;
-  }
-
-  // Init
   calc();
+}
+
+function onFuelTypeChange() {
+  const isCNG = document.getElementById('fuelType').value === 'cng';
+  document.getElementById('mileage-suf').textContent  = isCNG ? 'KM/KG' : 'KM/L';
+  document.getElementById('mileage-unit').textContent = isCNG ? 'km/kg' : 'km/l';
+  calc();
+}
+
+function setSvcMode(mode) {
+  svcMode = mode;
+  document.getElementById('svc-km-btn').classList.toggle('active', mode === 'km');
+  document.getElementById('svc-mo-btn').classList.toggle('active', mode === 'months');
+  document.getElementById('svc-km-field').style.display = mode === 'km' ? '' : 'none';
+  document.getElementById('svc-mo-field').style.display = mode === 'months' ? '' : 'none';
+  calc();
+}
+
+function toggleSec(id) {
+  document.getElementById(id).classList.toggle('open');
+}
+
+function fmtNum(n) { return Math.round(n).toLocaleString('en-IN'); }
+function fmt(n) { return '₹' + fmtNum(n); }
+
+function calc() {
+  const km       = parseFloat(document.getElementById('monthlyKm').value) || 0;
+  const mileage  = parseFloat(document.getElementById('mileage').value)  || 1;
+  const fp       = parseFloat(document.getElementById('fuelPrice').value) || 0;
+  const svcCost  = parseFloat(document.getElementById('svcCost').value)  || 0;
+  const svcKm    = parseFloat(document.getElementById('svcIntervalKm').value) || 1;
+  const svcMo    = parseFloat(document.getElementById('svcIntervalMo').value) || 1;
+  const repair   = parseFloat(document.getElementById('extraRepair').value) || 0;
+  const tyreCost = parseFloat(document.getElementById('tyreCost').value) || 0;
+  const tyreLife = parseFloat(document.getElementById('tyreLife').value) || 1;
+  const insYear  = parseFloat(document.getElementById('insurance').value) || 0;
+  const emi      = parseFloat(document.getElementById('emi').value) || 0;
+  const toll     = parseFloat(document.getElementById('toll').value) || 0;
+  const batt     = parseFloat(document.getElementById('battery').value) || 0;
+  const battLife = parseFloat(document.getElementById('batteryLife').value) || 1;
+  const chain    = parseFloat(document.getElementById('chain').value) || 0;
+  const chainLife= parseFloat(document.getElementById('chainLife').value) || 1;
+  const acGas    = parseFloat(document.getElementById('acGas').value) || 0;
+  const acLife   = parseFloat(document.getElementById('acLife').value) || 1;
+  const puc      = parseFloat(document.getElementById('puc').value) || 0;
+  const pucFreq  = parseFloat(document.getElementById('pucFreq').value) || 1;
+
+  const tyreCount = vehicleType === 'bike' ? 2 : 4;
+
+  // Fuel
+  const fuelCost = (km / mileage) * fp;
+
+  // Service — smart interval
+  let svcMonthlyCost = 0, svcNote = '';
+  if (svcMode === 'km') {
+    const servicesPerMonth = km / svcKm;
+    svcMonthlyCost = servicesPerMonth * svcCost;
+    const monthsPerService = svcKm / km;
+    svcNote = `${fmtNum(km)} km/mo ÷ ${fmtNum(svcKm)} km interval = service har ${monthsPerService.toFixed(1)} mahine`;
+  } else {
+    svcMonthlyCost = svcCost / svcMo;
+    svcNote = `₹${fmtNum(svcCost)} ÷ ${svcMo} months = monthly average`;
+  }
+
+  // Tyre
+  const tyreMo = (tyreCount * tyreCost) / (tyreLife / km);
+  const tyreChangeMonths = (tyreLife / km).toFixed(1);
+  document.getElementById('tyreMonthly').textContent = fmt(tyreMo);
+  document.getElementById('tyreCalcNote').textContent =
+    `${tyreCount} tyres × ₹${fmtNum(tyreCost)} ÷ change har ${tyreChangeMonths} months`;
+
+  document.getElementById('svcMonthly').textContent = fmt(svcMonthlyCost);
+  document.getElementById('svcCalcNote').textContent = svcNote;
+
+  const insMo    = insYear / 12;
+  const battMo   = batt / battLife;
+  const chainMo  = vehicleType === 'bike' ? (chain / (chainLife / km)) : 0;
+  const acMo     = vehicleType === 'car'  ? (acGas / acLife) : 0;
+  const pucMo    = puc / pucFreq;
+
+  const costs = {
+    fuel:    { val: fuelCost,     icon:'⛽', name:'Fuel', sub:`${fmtNum(km/mileage)}L × ₹${fp}`, color:'#ff4757' },
+    service: { val: svcMonthlyCost, icon:'🔧', name:'Service', sub: svcNote.length > 50 ? svcNote.slice(0,50)+'…' : svcNote, color:'#ff9f1c' },
+    repair:  { val: repair,       icon:'🛠️', name:'Unscheduled Repairs', sub:'Monthly avg estimate', color:'#ffa502' },
+    tyre:    { val: tyreMo,       icon:'🛞', name:'Tyres', sub:`${tyreCount} tyres, life ${fmtNum(tyreLife)} km`, color:'#ff9f1c' },
+    ins:     { val: insMo,        icon:'📋', name:'Insurance', sub:`₹${fmtNum(insYear)}/year`, color:'#54a0ff' },
+    emi:     { val: emi,          icon:'🏦', name:'Loan EMI', sub:'Monthly installment', color:'#9b59b6' },
+    toll:    { val: toll,         icon:'🛣️', name:'Toll', sub:'Monthly', color:'#636e72' },
+    battery: { val: battMo,       icon:'🔋', name:'Battery', sub:`₹${fmtNum(batt)} ÷ ${battLife}mo`, color:'#2ed573' },
+    ...(vehicleType === 'bike' ? { chain: { val: chainMo, icon:'⛓️', name:'Chain Kit', sub:`₹${fmtNum(chain)} ÷ ${fmtNum(chainLife)} km`, color:'#ffd32a' } } : {}),
+    ...(vehicleType === 'car'  ? { ac: { val: acMo, icon:'❄️', name:'AC Gas', sub:`₹${fmtNum(acGas)} ÷ ${acLife}mo`, color:'#74b9ff' } } : {}),
+    puc:     { val: pucMo,        icon:'📄', name:'PUC', sub:`₹${fmtNum(puc)} har ${pucFreq} months`, color:'#a29bfe' },
+  };
+
+  const total = Object.values(costs).reduce((a,c) => a + c.val, 0);
+  const perKm = km > 0 ? total / km : 0;
+  const noEmi = total - emi;
+
+  // Update sticky bar
+  document.getElementById('totalDisplay').textContent = fmt(total);
+  document.getElementById('perKmDisplay').textContent = fmt(perKm) + '/km · ' + fmt(total*12) + '/yr';
+  document.getElementById('fuelPct').textContent = total > 0 ? Math.round(fuelCost/total*100) + '%' : '0%';
+  document.getElementById('yearlyDisp').textContent = fmt(total * 12);
+  document.getElementById('noEmiDisp').textContent = fmt(noEmi);
+
+  // Store for modal
+  window._costs = costs;
+  window._total = total;
+  window._emi   = emi;
+  window._noEmi = noEmi;
+
+  // Refresh modal if open
+  if (document.getElementById('overlay').classList.contains('show')) renderModal();
+}
+
+function renderModal() {
+  const costs = window._costs;
+  const total = window._total;
+  const emi   = window._emi;
+  const noEmi = window._noEmi;
+
+  const sorted = Object.values(costs).filter(c => c.val > 0.5).sort((a,b) => b.val - a.val);
+  const html = sorted.map(c => {
+    const pct = total > 0 ? (c.val/total*100).toFixed(1) : 0;
+    return `<div class="bk-row">
+      <div class="bk-em">${c.icon}</div>
+      <div class="bk-info">
+        <div class="bk-name">${c.name}</div>
+        <div class="bk-sub">${c.sub}</div>
+      </div>
+      <div class="bk-bar-col">
+        <div class="bk-bar-bg"><div class="bk-bar-fg" style="width:${pct}%;background:${c.color}"></div></div>
+        <div class="bk-pct">${pct}%</div>
+      </div>
+      <div class="bk-amt">${fmt(c.val)}</div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('bkList').innerHTML = html + `
+    <div class="bk-row total-row">
+      <div class="bk-em">💰</div>
+      <div class="bk-info"><div class="bk-name">Total Monthly</div></div>
+      <div class="bk-amt">${fmt(total)}</div>
+    </div>`;
+
+  const emiDiv = document.getElementById('emiInfo');
+  if (emi > 0) {
+    emiDiv.style.display = '';
+    emiDiv.innerHTML = `✅ EMI khatam hone ke baad monthly cost sirf <strong>${fmt(noEmi)}</strong> reh jaayegi — <strong>${fmt(emi)}</strong> ki seedhi bachat!`;
+  } else {
+    emiDiv.style.display = 'none';
+  }
+}
+
+function openModal() { renderModal(); document.getElementById('overlay').classList.add('show'); }
+function closeOverlay() { document.getElementById('overlay').classList.remove('show'); }
+function closeModal(e) { if (e.target === document.getElementById('overlay')) closeOverlay(); }
+
+// Init
+setVehicle('bike');
 </script>
 </body>
 </html>
