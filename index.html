@@ -320,6 +320,31 @@ input[type=range]::-webkit-slider-thumb{
 
 /* ── Utils ── */
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* Optional toggle row */
+.opt-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 0;border-top:1px solid var(--border);margin-top:12px;
+}
+.opt-label{font-size:13px;color:var(--sub);font-weight:500}
+.opt-toggle{
+  position:relative;width:42px;height:24px;flex-shrink:0;
+}
+.opt-toggle input{opacity:0;width:0;height:0;position:absolute}
+.opt-slider{
+  position:absolute;inset:0;border-radius:12px;
+  background:var(--border);cursor:pointer;
+  transition:background 0.2s;
+}
+.opt-slider::before{
+  content:'';position:absolute;
+  width:18px;height:18px;border-radius:50%;
+  background:#fff;top:3px;left:3px;
+  transition:transform 0.2s;
+}
+.opt-toggle input:checked + .opt-slider{background:var(--amber)}
+.opt-toggle input:checked + .opt-slider::before{transform:translateX(18px)}
+.opt-fields{margin-top:10px}
 </style>
 </head>
 <body>
@@ -398,6 +423,33 @@ input[type=range]::-webkit-slider-thumb{
         <div class="inp-wrap">
           <input type="number" id="mileage" value="40" min="5" max="100" oninput="calc()"/>
           <span class="inp-suf" id="mileage-suf">KM/L</span>
+        </div>
+      </div>
+
+      <!-- Fuel Additive (optional) -->
+      <div class="opt-row">
+        <span class="opt-label">⚗️ Fuel Additive (E20 / cleaner)</span>
+        <label class="opt-toggle">
+          <input type="checkbox" id="additiveToggle" onchange="toggleAdditive()"/>
+          <span class="opt-slider"></span>
+        </label>
+      </div>
+      <div class="opt-fields" id="additive-fields" style="display:none">
+        <div class="row2">
+          <div class="field">
+            <div class="fl"><label>Cost per bottle</label></div>
+            <div class="inp-wrap">
+              <span class="inp-pre">₹</span>
+              <input type="number" id="additiveCost" value="250" min="0" oninput="calc()"/>
+            </div>
+          </div>
+          <div class="field">
+            <div class="fl"><label>Use every</label></div>
+            <div class="inp-wrap">
+              <input type="number" id="additiveFreq" value="3" min="1" oninput="calc()"/>
+              <span class="inp-suf">MO</span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -638,6 +690,119 @@ input[type=range]::-webkit-slider-thumb{
         </div>
       </div>
 
+      <!-- Chain Lube & Clean — bike only -->
+      <div id="chain-lube-field">
+        <div class="divider"></div>
+        <div class="row2">
+          <div class="field">
+            <div class="fl"><label>⛓️ Chain Lube</label></div>
+            <div class="inp-wrap">
+              <span class="inp-pre">₹</span>
+              <input type="number" id="lubeCost" value="30" min="0" oninput="calc()"/>
+            </div>
+          </div>
+          <div class="field">
+            <div class="fl"><label>Every</label></div>
+            <div class="inp-wrap">
+              <input type="number" id="lubeKm" value="500" min="100" step="100" oninput="calc()"/>
+              <span class="inp-suf">KM</span>
+            </div>
+          </div>
+        </div>
+        <div class="row2" style="margin-top:10px">
+          <div class="field">
+            <div class="fl"><label>🧹 Chain Clean</label></div>
+            <div class="inp-wrap">
+              <span class="inp-pre">₹</span>
+              <input type="number" id="cleanCost" value="20" min="0" oninput="calc()"/>
+            </div>
+          </div>
+          <div class="field">
+            <div class="fl"><label>Every</label></div>
+            <div class="inp-wrap">
+              <input type="number" id="cleanKm" value="1000" min="100" step="100" oninput="calc()"/>
+              <span class="inp-suf">KM</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 6. Washing & Care -->
+  <div class="sec" id="sec-wash">
+    <div class="sec-head" onclick="toggleSec('sec-wash')">
+      <div class="sec-head-left">
+        <div class="sec-icon">🧼</div>
+        <div>
+          <div class="sec-label">Washing & Care</div>
+          <div class="sec-sublabel">Wash, polish, silicon spray</div>
+        </div>
+      </div>
+      <div class="sec-arrow">▼</div>
+    </div>
+    <div class="sec-body">
+
+      <div class="row2">
+        <div class="field">
+          <div class="fl"><label>Wash cost</label></div>
+          <div class="inp-wrap">
+            <span class="inp-pre">₹</span>
+            <input type="number" id="washCost" value="80" min="0" oninput="calc()"/>
+          </div>
+        </div>
+        <div class="field">
+          <div class="fl"><label>Every</label></div>
+          <div class="inp-wrap">
+            <input type="number" id="washDays" value="7" min="1" oninput="calc()"/>
+            <span class="inp-suf">DAYS</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+      <div class="row2">
+        <div class="field">
+          <div class="fl"><label>✨ Polish/Detailing</label></div>
+          <div class="inp-wrap">
+            <span class="inp-pre">₹</span>
+            <input type="number" id="polishCost" value="300" min="0" oninput="calc()"/>
+          </div>
+        </div>
+        <div class="field">
+          <div class="fl"><label>Every</label></div>
+          <div class="inp-wrap">
+            <input type="number" id="polishFreq" value="3" min="1" oninput="calc()"/>
+            <span class="inp-suf">MO</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+      <div class="row2">
+        <div class="field">
+          <div class="fl"><label>🛡️ Silicon Spray</label></div>
+          <div class="inp-wrap">
+            <span class="inp-pre">₹</span>
+            <input type="number" id="siliconCost" value="150" min="0" oninput="calc()"/>
+          </div>
+        </div>
+        <div class="field">
+          <div class="fl"><label>Every</label></div>
+          <div class="inp-wrap">
+            <input type="number" id="siliconFreq" value="3" min="1" oninput="calc()"/>
+            <span class="inp-suf">MO</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="svc-preview" style="margin-top:12px">
+        <span class="eq">🧮</span>
+        <p>Monthly care cost: <strong id="washMonthly">₹0</strong><br/>
+        <span id="washCalcNote" style="font-size:11px;color:var(--sub)"></span></p>
+      </div>
+
     </div>
   </div>
 
@@ -720,8 +885,9 @@ function setVehicle(type) {
   document.getElementById('km-hint').textContent = fmtNum(d.monthlyKm) + ' km';
 
   // Show/hide vehicle-specific fields
-  document.getElementById('chain-field').style.display = type === 'bike' ? '' : 'none';
-  document.getElementById('ac-field').style.display    = type === 'car'  ? '' : 'none';
+  document.getElementById('chain-field').style.display      = type === 'bike' ? '' : 'none';
+  document.getElementById('chain-lube-field').style.display = type === 'bike' ? '' : 'none';
+  document.getElementById('ac-field').style.display         = type === 'car'  ? '' : 'none';
 
   // Tyre sublabel
   document.getElementById('tyre-sublabel').textContent = (type === 'bike' ? '2' : '4') + ' tyres • life based';
@@ -754,6 +920,12 @@ function toggleSec(id) {
   document.getElementById(id).classList.toggle('open');
 }
 
+function toggleAdditive() {
+  const on = document.getElementById('additiveToggle').checked;
+  document.getElementById('additive-fields').style.display = on ? '' : 'none';
+  calc();
+}
+
 function fmtNum(n) { return Math.round(n).toLocaleString('en-IN'); }
 function fmt(n) { return '₹' + fmtNum(n); }
 
@@ -778,6 +950,21 @@ function calc() {
   const acLife   = parseFloat(document.getElementById('acLife').value) || 1;
   const puc      = parseFloat(document.getElementById('puc').value) || 0;
   const pucFreq  = parseFloat(document.getElementById('pucFreq').value) || 1;
+
+  // New fields
+  const lubeCost   = parseFloat(document.getElementById('lubeCost').value) || 0;
+  const lubeKm     = parseFloat(document.getElementById('lubeKm').value)   || 1;
+  const cleanCost  = parseFloat(document.getElementById('cleanCost').value)|| 0;
+  const cleanKm    = parseFloat(document.getElementById('cleanKm').value)  || 1;
+  const addOn      = document.getElementById('additiveToggle').checked;
+  const addCost    = addOn ? (parseFloat(document.getElementById('additiveCost').value)||0) : 0;
+  const addFreq    = parseFloat(document.getElementById('additiveFreq').value) || 1;
+  const washCost   = parseFloat(document.getElementById('washCost').value) || 0;
+  const washDays   = parseFloat(document.getElementById('washDays').value) || 1;
+  const polishCost = parseFloat(document.getElementById('polishCost').value)||0;
+  const polishFreq = parseFloat(document.getElementById('polishFreq').value)||1;
+  const siliconCost= parseFloat(document.getElementById('siliconCost').value)||0;
+  const siliconFreq= parseFloat(document.getElementById('siliconFreq').value)||1;
 
   const tyreCount = vehicleType === 'bike' ? 2 : 4;
 
@@ -806,24 +993,46 @@ function calc() {
   document.getElementById('svcMonthly').textContent = fmt(svcMonthlyCost);
   document.getElementById('svcCalcNote').textContent = svcNote;
 
-  const insMo    = insYear / 12;
-  const battMo   = batt / battLife;
-  const chainMo  = vehicleType === 'bike' ? (chain / (chainLife / km)) : 0;
-  const acMo     = vehicleType === 'car'  ? (acGas / acLife) : 0;
-  const pucMo    = puc / pucFreq;
+  const insMo     = insYear / 12;
+  const battMo    = batt / battLife;
+  const chainMo   = vehicleType === 'bike' ? (chain / (chainLife / km)) : 0;
+  const acMo      = vehicleType === 'car'  ? (acGas / acLife) : 0;
+  const pucMo     = puc / pucFreq;
+
+  // New costs
+  const additiveMo = addCost / addFreq;
+  const lubeMo     = vehicleType === 'bike' ? (lubeCost * (km / lubeKm))  : 0;
+  const cleanMo    = vehicleType === 'bike' ? (cleanCost * (km / cleanKm)) : 0;
+  const washMo     = washCost * (30 / washDays);
+  const polishMo   = polishCost / polishFreq;
+  const siliconMo  = siliconCost / siliconFreq;
+  const totalCareMo= washMo + polishMo + siliconMo;
+
+  // Update wash preview
+  document.getElementById('washMonthly').textContent = fmt(totalCareMo);
+  document.getElementById('washCalcNote').textContent =
+    `Wash ₹${fmtNum(washMo)}/mo + Polish ₹${fmtNum(polishMo)}/mo + Silicon ₹${fmtNum(siliconMo)}/mo`;
 
   const costs = {
-    fuel:    { val: fuelCost,     icon:'⛽', name:'Fuel', sub:`${fmtNum(km/mileage)}L × ₹${fp}`, color:'#ff4757' },
-    service: { val: svcMonthlyCost, icon:'🔧', name:'Service', sub: svcNote.length > 50 ? svcNote.slice(0,50)+'…' : svcNote, color:'#ff9f1c' },
-    repair:  { val: repair,       icon:'🛠️', name:'Unscheduled Repairs', sub:'Monthly avg estimate', color:'#ffa502' },
-    tyre:    { val: tyreMo,       icon:'🛞', name:'Tyres', sub:`${tyreCount} tyres, life ${fmtNum(tyreLife)} km`, color:'#ff9f1c' },
-    ins:     { val: insMo,        icon:'📋', name:'Insurance', sub:`₹${fmtNum(insYear)}/year`, color:'#54a0ff' },
-    emi:     { val: emi,          icon:'🏦', name:'Loan EMI', sub:'Monthly installment', color:'#9b59b6' },
-    toll:    { val: toll,         icon:'🛣️', name:'Toll', sub:'Monthly', color:'#636e72' },
-    battery: { val: battMo,       icon:'🔋', name:'Battery', sub:`₹${fmtNum(batt)} ÷ ${battLife}mo`, color:'#2ed573' },
-    ...(vehicleType === 'bike' ? { chain: { val: chainMo, icon:'⛓️', name:'Chain Kit', sub:`₹${fmtNum(chain)} ÷ ${fmtNum(chainLife)} km`, color:'#ffd32a' } } : {}),
-    ...(vehicleType === 'car'  ? { ac: { val: acMo, icon:'❄️', name:'AC Gas', sub:`₹${fmtNum(acGas)} ÷ ${acLife}mo`, color:'#74b9ff' } } : {}),
-    puc:     { val: pucMo,        icon:'📄', name:'PUC', sub:`₹${fmtNum(puc)} har ${pucFreq} months`, color:'#a29bfe' },
+    fuel:    { val: fuelCost,      icon:'⛽', name:'Fuel',               sub:`${fmtNum(km/mileage)}L × ₹${fp}`, color:'#ff4757' },
+    ...(additiveMo > 0 ? { additive: { val: additiveMo, icon:'⚗️', name:'Fuel Additive', sub:`₹${fmtNum(addCost)} har ${addFreq} mo`, color:'#fd79a8' } } : {}),
+    service: { val: svcMonthlyCost,icon:'🔧', name:'Service',            sub: svcNote.length > 50 ? svcNote.slice(0,50)+'…' : svcNote, color:'#ff9f1c' },
+    repair:  { val: repair,        icon:'🛠️', name:'Unscheduled Repairs', sub:'Monthly avg estimate', color:'#ffa502' },
+    tyre:    { val: tyreMo,        icon:'🛞', name:'Tyres',               sub:`${tyreCount} tyres, life ${fmtNum(tyreLife)} km`, color:'#ff9f1c' },
+    ins:     { val: insMo,         icon:'📋', name:'Insurance',           sub:`₹${fmtNum(insYear)}/year`, color:'#54a0ff' },
+    emi:     { val: emi,           icon:'🏦', name:'Loan EMI',            sub:'Monthly installment', color:'#9b59b6' },
+    toll:    { val: toll,          icon:'🛣️', name:'Toll',                sub:'Monthly', color:'#636e72' },
+    battery: { val: battMo,        icon:'🔋', name:'Battery',             sub:`₹${fmtNum(batt)} ÷ ${battLife}mo`, color:'#2ed573' },
+    ...(vehicleType === 'bike' ? {
+      chain:  { val: chainMo,  icon:'⛓️', name:'Chain Kit',   sub:`₹${fmtNum(chain)} ÷ ${fmtNum(chainLife)} km`, color:'#ffd32a' },
+      lube:   { val: lubeMo,   icon:'🛢️', name:'Chain Lube',  sub:`₹${fmtNum(lubeCost)} har ${fmtNum(lubeKm)} km`, color:'#fdcb6e' },
+      clean:  { val: cleanMo,  icon:'🧹', name:'Chain Clean', sub:`₹${fmtNum(cleanCost)} har ${fmtNum(cleanKm)} km`, color:'#e17055' },
+    } : {}),
+    ...(vehicleType === 'car' ? { ac: { val: acMo, icon:'❄️', name:'AC Gas', sub:`₹${fmtNum(acGas)} ÷ ${acLife}mo`, color:'#74b9ff' } } : {}),
+    puc:     { val: pucMo,         icon:'📄', name:'PUC',                 sub:`₹${fmtNum(puc)} har ${pucFreq} months`, color:'#a29bfe' },
+    wash:    { val: washMo,        icon:'🚿', name:'Wash',                sub:`₹${fmtNum(washCost)} har ${washDays} days`, color:'#00cec9' },
+    polish:  { val: polishMo,      icon:'✨', name:'Polish/Detailing',    sub:`₹${fmtNum(polishCost)} har ${polishFreq} mo`, color:'#55efc4' },
+    silicon: { val: siliconMo,     icon:'🛡️', name:'Silicon Spray',       sub:`₹${fmtNum(siliconCost)} har ${siliconFreq} mo`, color:'#81ecec' },
   };
 
   const total = Object.values(costs).reduce((a,c) => a + c.val, 0);
